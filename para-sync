@@ -1,0 +1,20 @@
+#!/bin/bash
+
+# Parse command line arguments
+THREADS="${1:-5}"
+FLAGS="${2:-}"
+SRC="${3:-}"
+DEST="${4:-}"
+MODIFIERS="${@:5}"
+
+# Create a temporary file to store the list of files to copy
+FILE_LIST=$(mktemp)
+
+# Generate a list of files to copy
+ls -1 "$SRC" > "$FILE_LIST"
+
+# Use xargs to run rsync in parallel for each file
+cat "$FILE_LIST" | xargs -I {} -P "$THREADS" -n 1 rsync $FLAGS $MODIFIERS --progress "$SRC"/{} "$DEST"
+
+# Remove the temporary file
+rm "$FILE_LIST"
